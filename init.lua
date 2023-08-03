@@ -27,7 +27,10 @@ require('lazy').setup({
   -- Detect tabstop and shiftwidth automatically
   'tpope/vim-sleuth',
   {
-    "akinsho/toggleterm.nvim", version = "*", config = true
+    "akinsho/toggleterm.nvim", version = "*", opts = {
+      open_mapping = [[\\\\]],
+      terminal_mappings = true,
+    },
   },
   -- NOTE: This is where your plugins related to LSP can be installed.
   --  The configuration is done below. Search for lspconfig to find it below.
@@ -41,7 +44,7 @@ require('lazy').setup({
 
       -- Useful status updates for LSP
       -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
-      { 'j-hui/fidget.nvim', tag = 'legacy', opts = {} },
+      { 'j-hui/fidget.nvim',       tag = 'legacy', opts = {} },
 
       -- Additional lua configuration, makes nvim stuff amazing!
       'folke/neodev.nvim',
@@ -75,7 +78,7 @@ require('lazy').setup({
   },
 
   -- Useful plugin to show you pending keybinds.
-  { 'folke/which-key.nvim', opts = {} },
+  { 'folke/which-key.nvim',          opts = {} },
   {
     -- Adds git releated signs to the gutter, as well as utilities for managing changes
     'lewis6991/gitsigns.nvim',
@@ -89,7 +92,8 @@ require('lazy').setup({
         changedelete = { text = '~' },
       },
       on_attach = function(bufnr)
-        vim.keymap.set('n', '<leader>gp', require('gitsigns').prev_hunk, { buffer = bufnr, desc = '[G]o to [P]revious Hunk' })
+        vim.keymap.set('n', '<leader>gp', require('gitsigns').prev_hunk,
+          { buffer = bufnr, desc = '[G]o to [P]revious Hunk' })
         vim.keymap.set('n', '<leader>gn', require('gitsigns').next_hunk, { buffer = bufnr, desc = '[G]o to [N]ext Hunk' })
         vim.keymap.set('n', '<leader>ph', require('gitsigns').preview_hunk, { buffer = bufnr, desc = '[P]review [H]unk' })
       end,
@@ -131,7 +135,7 @@ require('lazy').setup({
   },
 
   -- "gc" to comment visual regions/lines
-  { 'numToStr/Comment.nvim', opts = {} },
+  { 'numToStr/Comment.nvim',         opts = {} },
 
   -- Fuzzy Finder (files, lsp, etc)
   { 'nvim-telescope/telescope.nvim', branch = '0.1.x', dependencies = { 'nvim-lua/plenary.nvim' } },
@@ -148,6 +152,41 @@ require('lazy').setup({
       return vim.fn.executable 'make' == 1
     end,
   },
+  "folke/trouble.nvim",
+  dependencies = { "nvim-tree/nvim-web-devicons" },
+  opts = {
+    position = "bottom",
+    icons = true,
+    mode = "workspace_diagnostics",
+    group = true,
+    action_keys = {
+      close = "q",                                   -- close the list
+      cancel = "<esc>",                              -- cancel the preview and get back to your last window / buffer / cursor
+      refresh = "r",                                 -- manually refresh
+      jump = { "<cr>", "<tab>", "<2-leftmouse>" },   -- jump to the diagnostic or open / close folds
+      open_split = { "<c-x>" },                      -- open buffer in new split
+      open_vsplit = { "<c-v>" },                     -- open buffer in new vsplit
+      open_tab = { "<c-t>" },                        -- open buffer in new tab
+      jump_close = { "o" },                          -- jump to the diagnostic and close the list
+      toggle_mode = "m",                             -- toggle between "workspace" and "document" diagnostics mode
+      switch_severity = "s",                         -- switch "diagnostics" severity filter level to HINT / INFO / WARN / ERROR
+      toggle_preview = "P",                          -- toggle auto_preview
+      hover = "K",                                   -- opens a small popup with the full multiline message
+      preview = "p",                                 -- preview the diagnostic location
+      open_code_href = "c",                          -- if present, open a URI with more information about the diagnostic error
+      close_folds = { "zM", "zm" },                  -- close all folds
+      open_folds = { "zR", "zr" },                   -- open all folds
+      toggle_fold = { "zA", "za" },                  -- toggle fold of current file
+      previous = "k",                                -- previous item
+      next = "j",                                    -- next item
+      help = "?"                                     -- help menu
+    },
+    multiline = true,
+
+    -- your configuration comes here
+    -- or leave it empty to use the default settings
+    -- refer to the configuration section below
+  },
 
   {
     -- Highlight, edit, and navigate code
@@ -158,16 +197,16 @@ require('lazy').setup({
     build = ':TSUpdate',
   },
   {
-  'glepnir/dashboard-nvim',
-  event = 'VimEnter',
-  config = function()
-    require('dashboard').setup {
+    'glepnir/dashboard-nvim',
+    event = 'VimEnter',
+    config = function()
+      require('dashboard').setup {
         theme = 'hyper'
-    }
-  end,
-  dependencies = { {'nvim-tree/nvim-web-devicons'}}
-},
-   { import = 'custom.plugins' },
+      }
+    end,
+    dependencies = { { 'nvim-tree/nvim-web-devicons' } }
+  },
+  { import = 'custom.plugins' },
 }, {})
 
 -- [[ Setting options ]]
@@ -235,18 +274,27 @@ vim.keymap.set('n', '<S-Tab>', '<Cmd>BufferPrevious<CR>', bufferopts)
 vim.keymap.set('n', '<leader>o', '<Cmd>Neotree<CR>')
 
 -- [[ ToggleTerm mappings]]
-vim.keymap.set('n', '\\\\', '<Cmd>:ToggleTerm<CR>', {noremap = true, silent = true})
+vim.keymap.set('n', '\\\\', '<Cmd>:ToggleTerm<CR>', { noremap = true, silent = true })
 function _G.set_terminal_keymaps()
-  local opts = {buffer = 1}
+  local opts = { buffer = 0 }
   vim.keymap.set('t', '<esc>', [[<C-\><C-n>]], opts)
-  vim.keymap.set('t', '<C-k>', [[<C-\><C-n><C-k>]], opts)
+  vim.keymap.set('t', 'jk', [[<C-\><C-n>]], opts)
+  vim.keymap.set('t', '<C-h>', [[<Cmd>wincmd h<CR>]], opts)
+  vim.keymap.set('t', '<C-j>', [[<Cmd>wincmd j<CR>]], opts)
+  vim.keymap.set('t', '<C-k>', [[<Cmd>wincmd k<CR>]], opts)
+  vim.keymap.set('t', '<C-l>', [[<Cmd>wincmd l<CR>]], opts)
+  vim.keymap.set('t', '<C-w>', [[<C-\><C-n><C-w>]], opts)
 end
+
 vim.cmd('autocmd! TermOpen term://* lua set_terminal_keymaps()')
 
-vim.cmd('tnoremap <Esc> <C-\\><C-n>')
+-- vim.cmd('tnoremap <Esc> <C-\\><C-n>')
+
+-- [[ Trouble Mappings ]]
+vim.keymap.set('n', '<leader>tr', '<Cmd>:TroubleToggle<CR>')
 
 -- [[ Nvim dap bindings ]]
-vim.keymap.set('n', '<leader>db', '<Cmd>DapToggleBreakpoint<CR>', { noremap = true})
+vim.keymap.set('n', '<leader>db', '<Cmd>DapToggleBreakpoint<CR>', { noremap = true })
 vim.keymap.set('n', '<leader>dus', function()
   local widgets = require('dap.ui.widgets');
   local sidebar = widgets.sidebar(widgets.scopes);
