@@ -23,11 +23,79 @@ require('lazy').setup({
   -- Git related plugins
   'tpope/vim-fugitive',
   'tpope/vim-rhubarb',
+  {
+    "folke/edgy.nvim",
+    event = "VeryLazy",
+    init = function()
+      vim.opt.laststatus = 3
+      vim.opt.splitkeep = "screen"
+    end,
+    opts = {
+      bottom = {
+        -- toggleterm / lazyterm at the bottom with a height of 40% of the screen
+        {
+          ft = "toggleterm",
+          size = { height = 0.3 },
+          -- exclude floating windows
+          filter = function(buf, win)
+            return vim.api.nvim_win_get_config(win).relative == ""
+          end,
+        },
+        "Trouble",
+        { ft = "qf",            title = "QuickFix" },
+        {
+          ft = "help",
+          size = { height = 20 },
+          -- only show help buffers
+          filter = function(buf)
+            return vim.bo[buf].buftype == "help"
+          end,
+        },
+        { ft = "spectre_panel", size = { height = 0.4 } },
+        {
+          ft = "fugitive", size = { height = 0.3 }
+        },
+      },
+      left = {
+        -- Neo-tree filesystem always takes half the screen height
+        {
+          title = "Neo-Tree",
+          ft = "neo-tree",
+          filter = function(buf)
+            return vim.b[buf].neo_tree_source == "filesystem"
+          end,
+          size = { height = 0.5 },
+        },
+        {
+          title = "Neo-Tree Git",
+          ft = "neo-tree",
+          filter = function(buf)
+            return vim.b[buf].neo_tree_source == "git_status"
+          end,
+          pinned = true,
+          open = "Neotree position=right git_status",
+        },
+        {
+          title = "Neo-Tree Buffers",
+          ft = "neo-tree",
+          filter = function(buf)
+            return vim.b[buf].neo_tree_source == "buffers"
+          end,
+          pinned = true,
+          open = "Neotree position=top buffers",
+        },
+        -- any other neo-tree windows
+        "neo-tree",
+      },
+    },
+  },
 
   -- Detect tabstop and shiftwidth automatically
   'tpope/vim-sleuth',
   {
-    "akinsho/toggleterm.nvim", version = "*", opts = {
+    "akinsho/toggleterm.nvim",
+    version = "*",
+    opts = {
       open_mapping = [[\\\\]],
       terminal_mappings = true,
     },
@@ -160,26 +228,26 @@ require('lazy').setup({
     mode = "workspace_diagnostics",
     group = true,
     action_keys = {
-      close = "q",                                   -- close the list
-      cancel = "<esc>",                              -- cancel the preview and get back to your last window / buffer / cursor
-      refresh = "r",                                 -- manually refresh
-      jump = { "<cr>", "<tab>", "<2-leftmouse>" },   -- jump to the diagnostic or open / close folds
-      open_split = { "<c-x>" },                      -- open buffer in new split
-      open_vsplit = { "<c-v>" },                     -- open buffer in new vsplit
-      open_tab = { "<c-t>" },                        -- open buffer in new tab
-      jump_close = { "o" },                          -- jump to the diagnostic and close the list
-      toggle_mode = "m",                             -- toggle between "workspace" and "document" diagnostics mode
-      switch_severity = "s",                         -- switch "diagnostics" severity filter level to HINT / INFO / WARN / ERROR
-      toggle_preview = "P",                          -- toggle auto_preview
-      hover = "K",                                   -- opens a small popup with the full multiline message
-      preview = "p",                                 -- preview the diagnostic location
-      open_code_href = "c",                          -- if present, open a URI with more information about the diagnostic error
-      close_folds = { "zM", "zm" },                  -- close all folds
-      open_folds = { "zR", "zr" },                   -- open all folds
-      toggle_fold = { "zA", "za" },                  -- toggle fold of current file
-      previous = "k",                                -- previous item
-      next = "j",                                    -- next item
-      help = "?"                                     -- help menu
+      close = "q",                                 -- close the list
+      cancel = "<esc>",                            -- cancel the preview and get back to your last window / buffer / cursor
+      refresh = "r",                               -- manually refresh
+      jump = { "<cr>", "<tab>", "<2-leftmouse>" }, -- jump to the diagnostic or open / close folds
+      open_split = { "<c-x>" },                    -- open buffer in new split
+      open_vsplit = { "<c-v>" },                   -- open buffer in new vsplit
+      open_tab = { "<c-t>" },                      -- open buffer in new tab
+      jump_close = { "o" },                        -- jump to the diagnostic and close the list
+      toggle_mode = "m",                           -- toggle between "workspace" and "document" diagnostics mode
+      switch_severity = "s",                       -- switch "diagnostics" severity filter level to HINT / INFO / WARN / ERROR
+      toggle_preview = "P",                        -- toggle auto_preview
+      hover = "K",                                 -- opens a small popup with the full multiline message
+      preview = "p",                               -- preview the diagnostic location
+      open_code_href = "c",                        -- if present, open a URI with more information about the diagnostic error
+      close_folds = { "zM", "zm" },                -- close all folds
+      open_folds = { "zR", "zr" },                 -- open all folds
+      toggle_fold = { "zA", "za" },                -- toggle fold of current file
+      previous = "k",                              -- previous item
+      next = "j",                                  -- next item
+      help = "?"                                   -- help menu
     },
     multiline = true,
 
@@ -213,6 +281,11 @@ require('lazy').setup({
 -- See `:help vim.o`
 -- NOTE: You can change these options as you wish!
 
+-- views can only be fully collapsed with the global statusline
+--vim.opt.laststatus = 3
+-- Default splitting will cause your main splits to jump when opening an edgebar.
+-- To prevent this, set `splitkeep` to either `screen` or `topline`.
+--vim.opt.splitkeep = "screen"
 -- Set highlight on search
 vim.o.hlsearch = false
 vim.o.incsearch = true
@@ -261,6 +334,12 @@ vim.o.termguicolors = true
 -- See `:help vim.keymap.set()`
 vim.keymap.set({ 'n', 'v' }, '<Space>', '<Nop>', { silent = true })
 
+-- window movement keymaps
+vim.keymap.set({ 'n', 't' }, '<C-k>', '<C-w>k')
+vim.keymap.set({ 'n', 't' }, '<C-j>', '<C-w>j')
+vim.keymap.set({ 'n', 't' }, '<C-h>', '<C-w>h')
+vim.keymap.set({ 'n', 't' }, '<C-l>', '<C-w>l')
+
 -- Remap for dealing with word wrap
 vim.keymap.set('n', 'k', "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
 vim.keymap.set('n', 'j', "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
@@ -288,6 +367,7 @@ end
 
 vim.cmd('autocmd! TermOpen term://* lua set_terminal_keymaps()')
 
+vim.keymap.set('t', '<esc>', vim.api.nvim_replace_termcodes('<C-\\><C-N>', true, true, true))
 -- vim.cmd('tnoremap <Esc> <C-\\><C-n>')
 
 -- [[ Trouble Mappings ]]
@@ -399,15 +479,6 @@ require('nvim-treesitter.configs').setup {
         ['[]'] = '@class.outer',
       },
     },
-    swap = {
-      enable = true,
-      swap_next = {
-        ['<leader>a'] = '@parameter.inner',
-      },
-      swap_previous = {
-        ['<leader>A'] = '@parameter.inner',
-      },
-    },
   },
 }
 
@@ -450,8 +521,8 @@ local on_attach = function(_, bufnr)
 
   -- Lesser used LSP functionality
   nmap('gD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
-  nmap('<leader>wa', vim.lsp.buf.add_workspace_folder, '[W]orkspace [A]dd Folder')
-  nmap('<leader>wr', vim.lsp.buf.remove_workspace_folder, '[W]orkspace [R]emove Folder')
+  nmap('<leader>afo', vim.lsp.buf.add_workspace_folder, '[A]dd [f][o]lder')
+  nmap('<leader>rfo', vim.lsp.buf.remove_workspace_folder, '[W]orkspace [R]emove Folder')
   nmap('<leader>wl', function()
     print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
   end, '[W]orkspace [L]ist Folders')
@@ -460,6 +531,7 @@ local on_attach = function(_, bufnr)
   vim.api.nvim_buf_create_user_command(bufnr, 'Format', function(_)
     vim.lsp.buf.format()
   end, { desc = 'Format current buffer with LSP' })
+  nmap('<leader>fmt', '<Cmd>:Format<CR>', "[F]ormat For[m]at Forma[t]")
 end
 
 -- [[ Language Servers ]]
