@@ -20,9 +20,16 @@ vim.opt.rtp:prepend(lazypath)
 require('lazy').setup({
   -- NOTE: First, some plugins that don't require any configuration
 
+  {
+   'ray-x/lsp_signature.nvim',
+    event = "VeryLazy",
+    opts = {},
+    config = function(_, opts) require('lsp_signature').setup(opts) end
+  },
   -- Git related plugins
   'tpope/vim-fugitive',
   'tpope/vim-rhubarb',
+  'github/copilot.vim',
   {
     "folke/edgy.nvim",
     event = "VeryLazy",
@@ -626,6 +633,7 @@ cmp.setup {
   sources = {
     { name = 'nvim_lsp' },
     { name = 'luasnip' },
+    { name = 'nvim_lsp_signature_help'},
   },
 }
 
