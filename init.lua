@@ -541,6 +541,7 @@ local servers = {
   gopls = {
     staticcheck = true,
     completeUnimported = true,
+    usePlaceholders = true,
     analyses = {
       unusedparams = true,
     }
